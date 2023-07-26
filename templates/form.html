@@ -3,10 +3,93 @@
 <head>
     <title>Project Folder Structure</title>
     <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f9f9f9;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #3498db;
+        }
+
         #drop-area {
             border: 2px dashed #ccc;
             padding: 20px;
+            margin: 20px auto;
+            text-align: center;
+            background-color: #ffffff;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 70%;
+            max-width: 500px;
+        }
+
+        #drop-area.highlight {
+            border-color: #3498db;
+            background-color: #f0f8ff;
+        }
+
+        #project-form {
+            display: flex;
+            align-items: center;
+            justify-content: center;
             margin-bottom: 20px;
+            width: 70%;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        #project-path-input {
+            flex: 1;
+            padding: 5px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 100%;
+        }
+
+        #project-form button {
+            padding: 8px 15px;
+            background-color: #3498db;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #result-container {
+            display: none;
+            background-color: #ffffff;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin: 20px auto;
+            width: 70%;
+            max-width: 500px;
+            text-align: center; /* 수정된 부분 */
+        }
+
+        h2 {
+            color: #3498db;
+            margin-bottom: 10px;
+        }
+
+        ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        li {
+            margin-bottom: 5px;
+        }
+
+        .no-result {
+            font-weight: bold;
+            color: #e74c3c;
         }
     </style>
 </head>
@@ -17,19 +100,18 @@
     </div>
 
     <form id="project-form">
-        <input type="file" id="project-file" accept=".zip,.tar,.tar.gz" style="display: none;">
+        <input type="file" id="project-file" style="display: none;">
         <input type="hidden" id="project-path" name="project_path">
-        <div>
-            <label for="project-path-input">Project Path:</label>
-            <input type="text" id="project-path-input" placeholder="Enter project path">
-            <button type="button" onclick="requestProjectStructure()">Get Structure</button>
-        </div>
+        <input type="text" id="project-path-input" placeholder="Enter project path">
+        <button type="button" onclick="requestProjectStructure()">Get Structure</button>
     </form>
 
-    <div id="result-container" style="display: none;">
+    <div id="result-container">
         <h2>Project Folder Structure</h2>
         <ul id="project-structure"></ul>
+        <p class="no-result" style="display: none;">No project structure found.</p>
     </div>
+
 
     <script>
         const dropArea = document.getElementById('drop-area');
@@ -38,6 +120,7 @@
         const projectPathInput = document.getElementById('project-path-input');
         const resultContainer = document.getElementById('result-container');
         const projectStructure = document.getElementById('project-structure');
+        const noResultMessage = document.querySelector('.no-result');
 
         dropArea.addEventListener('dragover', (event) => {
             event.preventDefault();
@@ -103,38 +186,42 @@
         }
 
         function showProjectStructure(projectStructure) {
-            projectForm.style.display = 'none';
             resultContainer.style.display = 'block';
+            noResultMessage.style.display = 'none';
 
             while (projectStructure.firstChild) {
                 projectStructure.removeChild(projectStructure.firstChild);
             }
 
-            for (const folder of projectStructure) {
-                const folderItem = document.createElement('li');
-                folderItem.textContent = folder.name;
-                projectStructure.appendChild(folderItem);
+            if (projectStructure.length === 0) {
+                noResultMessage.style.display = 'block';
+            } else {
+                for (const folder of projectStructure) {
+                    const folderItem = document.createElement('li');
+                    folderItem.textContent = folder.name;
+                    projectStructure.appendChild(folderItem);
 
-                if (folder.classes.length > 0) {
-                    const classList = document.createElement('ul');
-                    classList.className = 'class-list';
-                    for (const className of folder.classes) {
-                        const classItem = document.createElement('li');
-                        classItem.textContent = className;
-                        classList.appendChild(classItem);
+                    if (folder.classes.length > 0) {
+                        const classList = document.createElement('ul');
+                        classList.className = 'class-list';
+                        for (const className of folder.classes) {
+                            const classItem = document.createElement('li');
+                            classItem.textContent = className;
+                            classList.appendChild(classItem);
+                        }
+                        folderItem.appendChild(classList);
                     }
-                    folderItem.appendChild(classList);
-                }
 
-                if (folder.functions.length > 0) {
-                    const functionList = document.createElement('ul');
-                    functionList.className = 'function-list';
-                    for (const functionName of folder.functions) {
-                        const functionItem = document.createElement('li');
-                        functionItem.textContent = functionName;
-                        functionList.appendChild(functionItem);
+                    if (folder.functions.length > 0) {
+                        const functionList = document.createElement('ul');
+                        functionList.className = 'function-list';
+                        for (const functionName of folder.functions) {
+                            const functionItem = document.createElement('li');
+                            functionItem.textContent = functionName;
+                            functionList.appendChild(functionItem);
+                        }
+                        folderItem.appendChild(functionList);
                     }
-                    folderItem.appendChild(functionList);
                 }
             }
         }

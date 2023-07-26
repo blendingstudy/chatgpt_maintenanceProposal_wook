@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request, jsonify
 import os
 import inspect
+import shutil
+import tempfile
 
 app = Flask(__name__)
 
@@ -13,10 +15,13 @@ def index():
             return jsonify(project_structure=project_structure)
         elif 'project_file' in request.files:
             project_file = request.files['project_file']
-            project_path = os.path.join(app.config['UPLOAD_FOLDER'], project_file.filename)
-            project_file.save(project_path)
-            project_structure = get_project_structure(project_path)
-            return jsonify(project_structure=project_structure)
+            if project_file.filename.endswith(('.zip', '.tar', '.tar.gz')):
+                project_path = os.path.join(app.config['UPLOAD_FOLDER'], project_file.filename)
+                project_file.save(project_path)
+                project_structure = get_project_structure(project_path)
+                return jsonify(project_structure=project_structure)
+            else:
+                return jsonify(error='Invalid file format. Please upload a compressed archive file.')
     return render_template('form.html')
 
 def get_project_structure(project_path):
